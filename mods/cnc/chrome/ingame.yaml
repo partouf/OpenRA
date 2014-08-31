@@ -174,6 +174,27 @@ Container@OBSERVER_WIDGETS:
 					X: 5
 					Width: PARENT_RIGHT
 					Height: 25
+		AutoDirector@AUTODIRECTOR:
+			X:0
+			Y:0
+			Width:200
+			Height:20
+			MaxPanningTime:0.55
+			MaxPannableDistance:17000
+			TimeToWaitMax:7
+			TimeToWaitForBattleView:2
+			TimeToWaitForTroupsView:5
+			HotspotSizeX:5
+			HotspotSizeY:6
+			Children:
+				Checkbox@AUTODIRECTOR_CHECKBOX:
+					X:WINDOW_RIGHT-173
+					Y:202
+					Width:200
+					Height:20
+					Font:Regular
+					Text:Autodirector
+					Key:F5
 
 Container@PLAYER_WIDGETS:
 	Children:

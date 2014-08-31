@@ -14,10 +14,11 @@ using OpenRA.Effects;
 using OpenRA.GameRules;
 using OpenRA.Graphics;
 using OpenRA.Traits;
+using System;
 
 namespace OpenRA.Mods.RA.Effects
 {
-	public class NukeLaunch : IEffect
+	public class NukeLaunch : IEffect, IMomentCapture
 	{
 		readonly Player firedBy;
 		readonly Animation anim;
@@ -32,6 +33,11 @@ namespace OpenRA.Mods.RA.Effects
 
 		WPos pos;
 		int ticks;
+		WPos targetPos;
+		WPos launchPos;
+		bool goingUp = true;
+
+		int MagicCaptureImpactFrom = 427 * 2;
 
 		public NukeLaunch(Player firedBy, string weapon, WPos launchPos, WPos targetPos, WRange velocity, int delay, bool skipAscent)
 		{
@@ -39,6 +45,9 @@ namespace OpenRA.Mods.RA.Effects
 			this.weapon = weapon;
 			this.delay = delay;
 			this.turn = delay / 2;
+
+			this.launchPos = launchPos;
+			this.targetPos = targetPos;
 
 			var offset = new WVec(WRange.Zero, WRange.Zero, velocity * turn);
 			ascendSource = launchPos;
@@ -94,5 +103,28 @@ namespace OpenRA.Mods.RA.Effects
 		}
 
 		public float FractionComplete { get { return ticks * 1f / delay; } }
+
+		public bool ShouldCaptureThisMoment(out WPos focalpoint, out MomentCapturePriority priority)
+		{
+			if (!goingUp && (pos.Z <= MagicCaptureImpactFrom))
+			{
+				focalpoint = targetPos;
+				priority = MomentCapturePriority.High;
+
+				return true;
+			}
+			else if (goingUp && (Math.Abs(launchPos.Z - pos.Z) <= MagicCaptureImpactFrom))
+			{
+				focalpoint = launchPos;
+				priority = MomentCapturePriority.Low;
+
+				return true;
+			}
+
+			focalpoint = targetPos;
+			priority = MomentCapturePriority.Low;
+
+			return false;
+		}
 	}
 }

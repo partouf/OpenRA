@@ -18,7 +18,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Cnc.Effects
 {
-	public class IonCannon : IEffect
+	public class IonCannon : IEffect, IMomentCapture
 	{
 		readonly Target target;
 		readonly Animation anim;
@@ -59,6 +59,14 @@ namespace OpenRA.Mods.Cnc.Effects
 		void Finish(World world)
 		{
 			world.AddFrameEndTask(w => w.Remove(this));
+		}
+
+		public bool ShouldCaptureThisMoment(out WPos focalpoint, out MomentCapturePriority priority)
+		{
+			focalpoint = target.CenterPosition;
+			priority = MomentCapturePriority.High;
+
+			return true;
 		}
 	}
 }

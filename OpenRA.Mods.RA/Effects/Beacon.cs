@@ -10,12 +10,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using OpenRA.Effects;
 using OpenRA.Graphics;
 
 namespace OpenRA.Mods.RA.Effects
 {
-	public class Beacon : IEffect
+	public class Beacon : IEffect, IMomentCapture
 	{
 		readonly Player owner;
 		readonly WPos position;
@@ -29,6 +30,8 @@ namespace OpenRA.Mods.RA.Effects
 		static readonly int maxArrowHeight = 512;
 		int arrowHeight = maxArrowHeight;
 		int arrowSpeed = 50;
+		int duration;
+		int ticksPassed = 0;
 
 		// Player-placed beacons are removed after a delay
 		public Beacon(Player owner, WPos position, int duration, string palettePrefix)
@@ -39,7 +42,7 @@ namespace OpenRA.Mods.RA.Effects
 
 			arrow = new Animation(owner.World, "beacon");
 			circles = new Animation(owner.World, "beacon");
-
+			this.duration = duration;
 			arrow.Play("arrow");
 			circles.Play("circles");
 
@@ -76,6 +79,7 @@ namespace OpenRA.Mods.RA.Effects
 				arrowSpeed *= -1;
 			}
 
+			ticksPassed++;
 			arrow.Tick();
 			circles.Tick();
 
@@ -104,6 +108,19 @@ namespace OpenRA.Mods.RA.Effects
 					foreach (var a in clock.Render(position, r.Palette(posterPalette)))
 						yield return a;
 			}
+		}
+
+		public bool ShouldCaptureThisMoment(out WPos focalpoint, out MomentCapturePriority priority)
+		{
+			focalpoint = this.position;
+			priority = MomentCapturePriority.High;
+
+			if (this.ticksPassed / this.duration > 0.5)
+			{
+				priority = MomentCapturePriority.Low;
+			}
+
+			return true;
 		}
 	}
 }

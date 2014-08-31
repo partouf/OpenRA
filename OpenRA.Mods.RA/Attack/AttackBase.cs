@@ -36,6 +36,8 @@ namespace OpenRA.Mods.RA
 		protected Lazy<IFacing> facing;
 		protected Lazy<Building> building;
 		protected Func<IEnumerable<Armament>> GetArmaments;
+		
+		protected bool IsFiring = false;
 
 		readonly Actor self;
 		readonly AttackBaseInfo info;
@@ -75,13 +77,33 @@ namespace OpenRA.Mods.RA
 			return true;
 		}
 
+		protected virtual bool IsReloading()
+		{
+			if (Armaments.All(a => a.IsReloading))
+				return true;
+
+			return false;
+		}
+
+		public virtual bool IsFiringOrReloading()
+		{
+			return IsAttacking && (IsFiring || IsReloading());
+		}
+
 		public virtual void DoAttack(Actor self, Target target)
 		{
+			IsFiring = false;
+
 			if (!CanAttack(self, target))
 				return;
 
 			foreach (var a in Armaments)
-				a.CheckFire(self, facing.Value, target);
+			{
+				if (a.CheckFire(self, facing.Value, target) != null)
+				{
+					IsFiring = true;
+				}
+			}
 		}
 
 		public IEnumerable<IOrderTargeter> Orders
